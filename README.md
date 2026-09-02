@@ -6,7 +6,6 @@
 [![Spring Boot 3.2](https://img.shields.io/badge/Spring%20Boot-3.2.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Build Status](https://img.shields.io/badge/Build-Passing-success.svg)](https://github.com/K-Abhinav06/Toucan_Project)
 [![Vercel Ready](https://img.shields.io/badge/Vercel-Configured-black.svg)](https://vercel.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
