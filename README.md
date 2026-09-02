@@ -205,11 +205,3 @@ Deploy both Web UI and Serverless API in one command:
 ```bash
 npx vercel --prod
 ```
-
-### 🐳 Option B: Render / Railway Docker Deployment
-Connect your GitHub repository `https://github.com/K-Abhinav06/Toucan_Project` to **Render.com** or **Railway.app**. It will automatically detect the included `Dockerfile` and build the containerized Spring Boot app.
-
----
-
-## 📄 License
-This project is licensed under the [MIT License](LICENSE).
