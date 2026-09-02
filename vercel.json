@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "src/main/resources/static/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.js"
+    },
+    {
+      "src": "/h2-console(.*)",
+      "dest": "src/main/resources/static/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "src/main/resources/static/$1"
+    }
+  ]
+}

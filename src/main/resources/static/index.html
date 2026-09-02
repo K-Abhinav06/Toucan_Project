@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toucan | Enterprise Transaction Console</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-button {
+            background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        .gradient-button:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            transform: translateY(-1px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-gray-800">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i data-lucide="bird" class="w-6 h-6 text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                    <span class="gradient-text font-black">TOUCAN</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">SPRING BOOT STARTER v1.0</span>
+                </h1>
+                <p class="text-xs text-gray-400">Customer Transaction Engine & REST API Console</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-2 bg-gray-900/80 px-3 py-1.5 rounded-full border border-gray-800 text-xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-gray-300 font-medium">H2 Database: <span class="text-emerald-400 font-mono">jdbc:h2:mem:toucandb</span></span>
+            </div>
+            <a href="/h2-console" target="_blank" class="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition flex items-center gap-1.5 border border-gray-700">
+                <i data-lucide="database" class="w-3.5 h-3.5 text-cyan-400"></i> H2 Console
+            </a>
+            <div class="text-xs px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-700/50 text-emerald-300 font-mono">
+                SPRING BOOT 3.2 (JAVA 17)
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 glass-panel border-r border-gray-800 p-4 flex flex-col justify-between hidden md:flex">
+            <div class="space-y-6">
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Operations</p>
+                    <nav class="space-y-1">
+                        <button onclick="switchTab('transactions')" id="tab-btn-transactions" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <i data-lucide="list" class="w-4 h-4"></i>
+                            <span>All Transactions</span>
+                        </button>
+                        <button onclick="switchTab('create')" id="tab-btn-create" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            <span>Create Transaction</span>
+                        </button>
+                        <button onclick="switchTab('customer')" id="tab-btn-customer" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            <span>Customer Inspector</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-3">Developer Tools</p>
+                    <nav class="space-y-1">
+                        <button onclick="switchTab('swagger')" id="tab-btn-swagger" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200">
+                            <i data-lucide="code-2" class="w-4 h-4"></i>
+                            <span>API Skeleton & Docs</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 rounded-xl space-y-3">
+                <div class="flex items-center space-x-2 text-xs font-semibold text-emerald-400">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>Validation Engine</span>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Strict UUID format, non-blank customer ID, positive amount, ISO 4217 currency, and status state machine active.
+                </p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group hover:border-emerald-500/30 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400">Total Volume ($)</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                            <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-gray-100" id="stat-volume">$0.00</div>
+                    <div class="mt-1 text-xs text-emerald-400 flex items-center gap-1">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> Live calculate
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group hover:border-cyan-500/30 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400">Total Transactions</span>
+                        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                            <i data-lucide="activity" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-gray-100" id="stat-count">0</div>
+                    <div class="mt-1 text-xs text-cyan-400 flex items-center gap-1">
+                        <i data-lucide="database" class="w-3 h-3"></i> H2 Persisted
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group hover:border-blue-500/30 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400">Active Customers</span>
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-gray-100" id="stat-customers">0</div>
+                    <div class="mt-1 text-xs text-blue-400 flex items-center gap-1">
+                        <i data-lucide="user-check" class="w-3 h-3"></i> Distinct IDs
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group hover:border-amber-500/30 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400">Pending Approvals</span>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-amber-400" id="stat-pending">0</div>
+                    <div class="mt-1 text-xs text-amber-400/80 flex items-center gap-1">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i> Awaiting status transition
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: Transactions Hub -->
+            <div id="view-transactions" class="space-y-4">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="search-input" onkeyup="filterTransactions()" placeholder="Search by Transaction ID or Customer ID..." class="w-full pl-9 pr-4 py-2 bg-gray-900/90 border border-gray-800 rounded-xl text-sm text-gray-200 focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <select id="status-filter" onchange="filterTransactions()" class="bg-gray-900/90 border border-gray-800 text-xs rounded-xl px-3 py-2 text-gray-300 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">All Statuses</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="PROCESSING">PROCESSING</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="FAILED">FAILED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                        </select>
+                        <button onclick="loadTransactions()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold rounded-xl transition flex items-center gap-1.5 border border-gray-700">
+                            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="glass-panel rounded-2xl overflow-hidden border border-gray-800">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-900/80 text-gray-400 text-xs uppercase font-semibold border-b border-gray-800">
+                                    <th class="py-3.5 px-4">Transaction ID</th>
+                                    <th class="py-3.5 px-4">Customer ID</th>
+                                    <th class="py-3.5 px-4">Amount</th>
+                                    <th class="py-3.5 px-4">Type</th>
+                                    <th class="py-3.5 px-4">Status</th>
+                                    <th class="py-3.5 px-4">Created At</th>
+                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-table-body" class="divide-y divide-gray-800/60 text-xs text-gray-300">
+                                <tr>
+                                    <td colspan="7" class="py-8 text-center text-gray-500">
+                                        Loading transactions...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Create Transaction Form -->
+            <div id="view-create" class="hidden max-w-3xl mx-auto space-y-6">
+                <div class="glass-panel p-6 rounded-2xl border border-gray-800 space-y-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-100 flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-400"></i>
+                            Create New Transaction
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Fulfills Operation 1 of the exercise with validation rules.
+                        </p>
+                    </div>
+
+                    <form id="create-tx-form" onsubmit="handleCreateTransaction(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1.5">Customer ID *</label>
+                                <div class="relative">
+                                    <input type="text" id="form-customer-id" required placeholder="e.g. CUST-1001" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <p class="text-[10px] text-gray-500 mt-1">Required, non-blank string (3-64 chars)</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1.5">Amount *</label>
+                                <div class="relative">
+                                    <input type="number" step="0.01" min="0.01" id="form-amount" required placeholder="100.00" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <p class="text-[10px] text-gray-500 mt-1">Must be strictly greater than 0.00</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1.5">Currency (ISO 4217) *</label>
+                                <select id="form-currency" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-emerald-500">
+                                    <option value="USD">USD ($ - US Dollar)</option>
+                                    <option value="EUR">EUR (€ - Euro)</option>
+                                    <option value="GBP">GBP (£ - British Pound)</option>
+                                    <option value="INR">INR (₹ - Indian Rupee)</option>
+                                    <option value="CAD">CAD ($ - Canadian Dollar)</option>
+                                    <option value="JPY">JPY (¥ - Japanese Yen)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1.5">Transaction Type *</label>
+                                <select id="form-type" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-emerald-500">
+                                    <option value="PAYMENT">PAYMENT</option>
+                                    <option value="REFUND">REFUND</option>
+                                    <option value="TRANSFER">TRANSFER</option>
+                                    <option value="DEPOSIT">DEPOSIT</option>
+                                    <option value="WITHDRAWAL">WITHDRAWAL</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-gray-900/60 rounded-xl border border-gray-800 space-y-2">
+                            <div class="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                                <i data-lucide="info" class="w-3.5 h-3.5"></i> Initial Status Rule
+                            </div>
+                            <p class="text-xs text-gray-400">
+                                Every new transaction is initialized automatically with status <span class="px-2 py-0.5 bg-amber-500/10 text-amber-400 font-mono rounded text-[11px] border border-amber-500/20">PENDING</span>.
+                            </p>
+                        </div>
+
+                        <div id="form-alert" class="hidden p-3 rounded-xl text-xs"></div>
+
+                        <button type="submit" class="w-full gradient-button py-3 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i> Submit Transaction (POST /api/v1/transactions)
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 3: Customer Inspector -->
+            <div id="view-customer" class="hidden space-y-6">
+                <div class="glass-panel p-6 rounded-2xl border border-gray-800 space-y-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-100 flex items-center gap-2">
+                            <i data-lucide="users" class="w-5 h-5 text-cyan-400"></i>
+                            Customer Transaction History
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Fulfills Operation 4: Get all transactions for a specific customer.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <input type="text" id="cust-search-input" placeholder="Enter Customer ID (e.g. CUST-1001)..." class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-cyan-500">
+                        <button onclick="lookupCustomer()" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                            <i data-lucide="search" class="w-4 h-4"></i> Find Transactions
+                        </button>
+                    </div>
+                </div>
+
+                <div id="cust-results" class="hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-300" id="cust-heading">Transactions for Customer</h3>
+                        <span class="text-xs text-cyan-400 font-mono" id="cust-count">0 items found</span>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl overflow-hidden border border-gray-800">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-900/80 text-gray-400 text-xs uppercase font-semibold border-b border-gray-800">
+                                    <th class="py-3 px-4">Transaction ID</th>
+                                    <th class="py-3 px-4">Amount</th>
+                                    <th class="py-3 px-4">Currency</th>
+                                    <th class="py-3 px-4">Type</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cust-table-body" class="divide-y divide-gray-800/60 text-xs text-gray-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: API Skeleton & Docs -->
+            <div id="view-swagger" class="hidden space-y-6 max-w-4xl mx-auto">
+                <div class="glass-panel p-6 rounded-2xl border border-gray-800 space-y-4">
+                    <h2 class="text-lg font-bold text-gray-100 flex items-center gap-2">
+                        <i data-lucide="code-2" class="w-5 h-5 text-emerald-400"></i>
+                        API Skeleton & Endpoint Specifications
+                    </h2>
+                    <p class="text-xs text-gray-400">
+                        Complete HTTP request/response schemas for the four required operations.
+                    </p>
+                </div>
+
+                <!-- Endpoint 1 -->
+                <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 font-bold text-xs rounded-lg border border-emerald-500/20">POST</span>
+                            <span class="font-mono text-sm text-gray-200">/api/v1/transactions</span>
+                        </div>
+                        <span class="text-xs text-gray-400">Operation 1: Create Transaction</span>
+                    </div>
+                    <div class="bg-gray-950 p-3.5 rounded-xl border border-gray-800 font-mono text-xs text-gray-300 leading-relaxed overflow-x-auto">
+                        <p class="text-gray-500">// Request Body</p>
+                        <pre>{
+  "customerId": "CUST-1001",
+  "amount": 250.00,
+  "currency": "USD",
+  "transactionType": "PAYMENT"
+}</pre>
+                        <p class="text-gray-500 mt-2">// Response 201 CREATED</p>
+                        <pre>{
+  "transactionId": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
+  "customerId": "CUST-1001",
+  "amount": 250.00,
+  "currency": "USD",
+  "transactionType": "PAYMENT",
+  "transactionStatus": "PENDING",
+  "createdAt": "2026-09-02T11:20:00"
+}</pre>
+                    </div>
+                </div>
+
+                <!-- Endpoint 2 -->
+                <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 font-bold text-xs rounded-lg border border-blue-500/20">GET</span>
+                            <span class="font-mono text-sm text-gray-200">/api/v1/transactions/{id}</span>
+                        </div>
+                        <span class="text-xs text-gray-400">Operation 2: Get Transaction</span>
+                    </div>
+                    <div class="bg-gray-950 p-3.5 rounded-xl border border-gray-800 font-mono text-xs text-gray-300 leading-relaxed overflow-x-auto">
+                        <p class="text-gray-500">// Response 200 OK</p>
+                        <pre>{
+  "transactionId": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
+  "customerId": "CUST-1001",
+  "amount": 250.00,
+  "currency": "USD",
+  "transactionType": "PAYMENT",
+  "transactionStatus": "PENDING"
+}</pre>
+                    </div>
+                </div>
+
+                <!-- Endpoint 3 -->
+                <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 font-bold text-xs rounded-lg border border-amber-500/20">PATCH</span>
+                            <span class="font-mono text-sm text-gray-200">/api/v1/transactions/{id}/status</span>
+                        </div>
+                        <span class="text-xs text-gray-400">Operation 3: Update Transaction Status</span>
+                    </div>
+                    <div class="bg-gray-950 p-3.5 rounded-xl border border-gray-800 font-mono text-xs text-gray-300 leading-relaxed overflow-x-auto">
+                        <p class="text-gray-500">// Request Body</p>
+                        <pre>{
+  "status": "PROCESSING"
+}</pre>
+                    </div>
+                </div>
+
+                <!-- Endpoint 4 -->
+                <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-1 bg-purple-500/10 text-purple-400 font-bold text-xs rounded-lg border border-purple-500/20">GET</span>
+                            <span class="font-mono text-sm text-gray-200">/api/v1/transactions/customer/{customerId}</span>
+                        </div>
+                        <span class="text-xs text-gray-400">Operation 4: Get Customer Transactions</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Status Change Modal -->
+    <div id="status-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl border border-gray-800 max-w-md w-full space-y-4 relative">
+            <button onclick="closeStatusModal()" class="absolute right-4 top-4 text-gray-400 hover:text-gray-200">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-gray-100">Update Transaction Status</h3>
+            <p class="text-xs text-gray-400">Transaction ID: <span id="modal-tx-id" class="font-mono text-cyan-400"></span></p>
+            
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-gray-300">Target Status</label>
+                <select id="modal-target-status" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none">
+                    <option value="PROCESSING">PROCESSING</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="FAILED">FAILED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                </select>
+            </div>
+
+            <div id="modal-alert" class="hidden p-3 rounded-xl text-xs"></div>
+
+            <div class="flex items-center justify-end space-x-3 pt-2">
+                <button onclick="closeStatusModal()" class="px-4 py-2 bg-gray-800 text-gray-300 text-xs font-semibold rounded-xl">Cancel</button>
+                <button onclick="submitStatusUpdate()" class="px-4 py-2 gradient-button text-white text-xs font-semibold rounded-xl">Update Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript App Controller -->
+    <script>
+        let transactions = [];
+        let activeTxIdForStatus = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            seedInitialDemoData();
+            loadTransactions();
+        });
+
+        function switchTab(tab) {
+            ['transactions', 'create', 'customer', 'swagger'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (btn) {
+                    btn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-gray-400 hover:bg-gray-800/60 hover:text-gray-200";
+                }
+            });
+
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            if (activeBtn) {
+                activeBtn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+            }
+        }
+
+        async function seedInitialDemoData() {
+            try {
+                const res = await fetch('/api/v1/transactions');
+                const existing = await res.json();
+                if (existing.length === 0) {
+                    // Seed initial 3 sample transactions
+                    const demos = [
+                        { customerId: 'CUST-1001', amount: 450.00, currency: 'USD', transactionType: 'PAYMENT' },
+                        { customerId: 'CUST-1002', amount: 1200.50, currency: 'EUR', transactionType: 'DEPOSIT' },
+                        { customerId: 'CUST-1001', amount: 75.00, currency: 'USD', transactionType: 'REFUND' }
+                    ];
+                    for (const demo of demos) {
+                        await fetch('/api/v1/transactions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(demo)
+                        });
+                    }
+                    loadTransactions();
+                }
+            } catch (e) {
+                console.log('Seed demo check error:', e);
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const res = await fetch('/api/v1/transactions');
+                transactions = await res.json();
+                renderTable(transactions);
+                updateStats(transactions);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderTable(list) {
+            const tbody = document.getElementById('transaction-table-body');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-500">No transactions recorded yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(tx => {
+                const statusBadge = getStatusBadge(tx.transactionStatus);
+                const typeBadge = getTypeBadge(tx.transactionType);
+                return `
+                    <tr class="hover:bg-gray-800/40 transition">
+                        <td class="py-3 px-4 font-mono text-[11px] text-cyan-400">${tx.transactionId}</td>
+                        <td class="py-3 px-4 font-medium text-gray-200">${tx.customerId}</td>
+                        <td class="py-3 px-4 font-bold text-gray-100">${formatCurrency(tx.amount, tx.currency)}</td>
+                        <td class="py-3 px-4">${typeBadge}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-gray-400 text-[11px]">${formatDate(tx.createdAt)}</td>
+                        <td class="py-3 px-4 text-right">
+                            <button onclick="openStatusModal('${tx.transactionId}')" class="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-[11px] border border-gray-700 transition">
+                                Update Status
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStats(list) {
+            const totalVol = list.reduce((acc, t) => acc + (t.amount || 0), 0);
+            document.getElementById('stat-volume').innerText = `$${totalVol.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('stat-count').innerText = list.length;
+            const uniqueCusts = new Set(list.map(t => t.customerId)).size;
+            document.getElementById('stat-customers').innerText = uniqueCusts;
+            const pendingCount = list.filter(t => t.transactionStatus === 'PENDING').length;
+            document.getElementById('stat-pending').innerText = pendingCount;
+        }
+
+        function filterTransactions() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+
+            const filtered = transactions.filter(t => {
+                const matchesQuery = t.transactionId.toLowerCase().includes(query) || t.customerId.toLowerCase().includes(query);
+                const matchesStatus = statusFilter === 'ALL' || t.transactionStatus === statusFilter;
+                return matchesQuery && matchesStatus;
+            });
+
+            renderTable(filtered);
+        }
+
+        async function handleCreateTransaction(e) {
+            e.preventDefault();
+            const alertBox = document.getElementById('form-alert');
+            alertBox.classList.add('hidden');
+
+            const body = {
+                customerId: document.getElementById('form-customer-id').value,
+                amount: parseFloat(document.getElementById('form-amount').value),
+                currency: document.getElementById('form-currency').value,
+                transactionType: document.getElementById('form-type').value
+            };
+
+            try {
+                const res = await fetch('/api/v1/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alertBox.className = "p-3 rounded-xl text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400";
+                    alertBox.innerText = `Success! Created Transaction ID: ${data.transactionId}`;
+                    alertBox.classList.remove('hidden');
+                    document.getElementById('create-tx-form').reset();
+                    loadTransactions();
+                } else {
+                    alertBox.className = "p-3 rounded-xl text-xs bg-red-500/10 border border-red-500/20 text-red-400";
+                    alertBox.innerText = `Error: ${data.message || 'Validation failed'}`;
+                    alertBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                alertBox.className = "p-3 rounded-xl text-xs bg-red-500/10 border border-red-500/20 text-red-400";
+                alertBox.innerText = err.message;
+                alertBox.classList.remove('hidden');
+            }
+        }
+
+        async function lookupCustomer() {
+            const custId = document.getElementById('cust-search-input').value.trim();
+            if (!custId) return;
+
+            try {
+                const res = await fetch(`/api/v1/transactions/customer/${encodeURIComponent(custId)}`);
+                const data = await res.json();
+                document.getElementById('cust-results').classList.remove('hidden');
+                document.getElementById('cust-heading').innerText = `Transactions for ${custId}`;
+                document.getElementById('cust-count').innerText = `${data.length} item(s)`;
+
+                const tbody = document.getElementById('cust-table-body');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">No transactions found for this customer.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.map(tx => `
+                    <tr class="hover:bg-gray-800/40 transition">
+                        <td class="py-3 px-4 font-mono text-[11px] text-cyan-400">${tx.transactionId}</td>
+                        <td class="py-3 px-4 font-bold text-gray-100">${tx.amount}</td>
+                        <td class="py-3 px-4 text-gray-300 font-mono">${tx.currency}</td>
+                        <td class="py-3 px-4">${getTypeBadge(tx.transactionType)}</td>
+                        <td class="py-3 px-4">${getStatusBadge(tx.transactionStatus)}</td>
+                        <td class="py-3 px-4 text-gray-400 text-[11px]">${formatDate(tx.createdAt)}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function openStatusModal(txId) {
+            activeTxIdForStatus = txId;
+            document.getElementById('modal-tx-id').innerText = txId;
+            document.getElementById('modal-alert').classList.add('hidden');
+            document.getElementById('status-modal').classList.remove('hidden');
+        }
+
+        function closeStatusModal() {
+            document.getElementById('status-modal').classList.add('hidden');
+        }
+
+        async function submitStatusUpdate() {
+            if (!activeTxIdForStatus) return;
+            const targetStatus = document.getElementById('modal-target-status').value;
+            const alertBox = document.getElementById('modal-alert');
+
+            try {
+                const res = await fetch(`/api/v1/transactions/${activeTxIdForStatus}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: targetStatus })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    closeStatusModal();
+                    loadTransactions();
+                } else {
+                    alertBox.className = "p-3 rounded-xl text-xs bg-red-500/10 border border-red-500/20 text-red-400";
+                    alertBox.innerText = data.message || "Invalid state transition";
+                    alertBox.classList.remove('hidden');
+                }
+            } catch (e) {
+                alertBox.className = "p-3 rounded-xl text-xs bg-red-500/10 border border-red-500/20 text-red-400";
+                alertBox.innerText = e.message;
+                alertBox.classList.remove('hidden');
+            }
+        }
+
+        function getStatusBadge(status) {
+            const map = {
+                'PENDING': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                'PROCESSING': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                'COMPLETED': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                'FAILED': 'bg-red-500/10 text-red-400 border-red-500/20',
+                'CANCELLED': 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+            };
+            const cls = map[status] || 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+            return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${cls}">${status}</span>`;
+        }
+
+        function getTypeBadge(type) {
+            return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">${type}</span>`;
+        }
+
+        function formatCurrency(val, currency) {
+            return `${val} ${currency}`;
+        }
+
+        function formatDate(dtStr) {
+            if (!dtStr) return '-';
+            return new Date(dtStr).toLocaleString();
+        }
+    </script>
+</body>
+</html>

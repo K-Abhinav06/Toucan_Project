@@ -1,0 +1,25 @@
+{
+  "name": "toucan-transaction-starter",
+  "version": "1.0.0",
+  "description": "Toucan Customer Transactions Starter Project & Admin Console",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "mvnw.cmd spring-boot:run",
+    "start": "node api/index.js",
+    "test": "mvnw.cmd clean test"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "uuid": "^9.0.1"
+  },
+  "keywords": [
+    "spring-boot",
+    "vercel",
+    "toucan",
+    "transactions",
+    "starter"
+  ],
+  "author": "Toucan Team",
+  "license": "MIT"
+}
